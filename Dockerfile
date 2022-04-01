@@ -1,3 +1,7 @@
+ARG DB_PORT
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASS
 FROM docker.io/alpine:3 AS builder
 ENV DB_PORT=6033  
 ENV DB_NAME=railway  
