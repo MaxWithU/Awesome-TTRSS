@@ -1,5 +1,8 @@
 FROM docker.io/alpine:3 AS builder
-
+ENV DB_PORT=6033  
+ENV DB_NAME=railway  
+ENV DB_USER=postgres  
+ENV DB_PASS=7c4YL9QWbIyYZTNPc3hi  
 # Download ttrss via git
 WORKDIR /var/www
 RUN apk add --update tar curl git \
