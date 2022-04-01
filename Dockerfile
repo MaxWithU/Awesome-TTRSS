@@ -163,4 +163,5 @@ ENV SINGLE_USER_MODE=false
 ENV LOG_DESTINATION=sql
 ENV FEED_LOG_QUIET=false
 
+ENV PORT=8080
 ENTRYPOINT ["sh", "/docker-entrypoint.sh"]
