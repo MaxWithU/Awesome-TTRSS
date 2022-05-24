@@ -72,9 +72,18 @@ docker run -it --name ttrss --restart=always \
 
 ### 配置 HTTPS
 
-TTRSS 容器自身不负责使用 HTTPS 加密通信。参见下方的样例自行配置 Nginx 反向代理。使用 [Let's Encrypt](https://letsencrypt.org/) 可以获取免费 SSL 证书。
+TTRSS 容器自身不负责使用 HTTPS 加密通信。参见下方的样例自行配置 Caddy 或 Nginx 反向代理。使用 [Let's Encrypt](https://letsencrypt.org/) 可以获取免费 SSL 证书。
 
 ```nginx
+# Caddyfile
+ttrssdev.henry.wang {
+    reverse_proxy 127.0.0.1:181
+    encode zstd gzip
+}
+```
+
+```nginx
+# nginx.conf
 upstream ttrssdev {
     server 127.0.0.1:181;
 }
@@ -92,9 +101,6 @@ server {
 
     ssl_certificate /etc/letsencrypt/live/ttrssdev.henry.wang/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/ttrssdev.henry.wang/privkey.pem;
-
-    access_log /var/log/nginx/ttrssdev_access.log combined;
-    error_log  /var/log/nginx/ttrssdev_error.log;
 
     location / {
         proxy_redirect off;
@@ -116,31 +122,6 @@ server {
         proxy_temp_file_write_size  64k;
     }
 }
-```
-
-如果你想启用子目录，`https://mydomain.com/ttrss`，请参考如下配置：
-
-```nginx
-    location /ttrss/ {
-        rewrite /ttrss/(.*) /$1 break;
-        proxy_redirect https://$http_host https://$http_host/ttrss;
-        proxy_pass http://ttrssdev;
-
-        proxy_set_header  Host                $http_host;
-        proxy_set_header  X-Real-IP           $remote_addr;
-        proxy_set_header  X-Forwarded-Ssl     on;
-        proxy_set_header  X-Forwarded-For     $proxy_add_x_forwarded_for;
-        proxy_set_header  X-Forwarded-Proto   $scheme;
-        proxy_set_header  X-Frame-Options     SAMEORIGIN;
-
-        client_max_body_size        100m;
-        client_body_buffer_size     128k;
-
-        proxy_buffer_size           4k;
-        proxy_buffers               4 32k;
-        proxy_busy_buffers_size     64k;
-        proxy_temp_file_write_size  64k;
-    }
 ```
 
 **🔴 请注意， [你需要更新 `SELF_URL_PATH` 环境变量。](#supported-environment-variables)**
@@ -182,7 +163,7 @@ service.mercury:
 
 ## 数据库更新或迁移
 
-Postgres 大版本更新需要额外的步骤来确保服务正常运行。
+Postgres 大版本更新 (13->14) 需要额外的步骤来确保服务正常运行。
 为了更好地优化 Awesome TTRSS，有时候可能会推出一些破坏性更新。
 
 ### 步骤
@@ -216,8 +197,6 @@ Postgres 大版本更新需要额外的步骤来确保服务正常运行。
    ```
 
 1. 测试所有服务是否正常工作，现在你可以移除步骤二中的备份了。
-
-旧版 docker-compose（支持 Postgres 12）已经被 [归档为 docker-compose.pg12.yml](https://github.com/HenryQW/Awesome-TTRSS/blob/main/docker-compose.pg12.yml)，且不再维护。
 
 ## 插件
 
